@@ -4,8 +4,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import css from "./CreateNote.module.css";
 import NoteForm from "@/components/NoteForm/NoteForm";
 import { CreateNoteValues } from "@/types/note";
-import { createNote } from "@/lib/api";
 import { useRouter } from "next/navigation";
+import { createNote } from "@/lib/api/clientApi";
 
 export default function CreateNoteClient() {
   const queryClient = useQueryClient();

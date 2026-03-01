@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { deleteNote, fetchNotes } from "@/lib/api";
 import css from "./NotesPage.module.css";
 import NoteList from "@/components/NoteList/NoteList";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -9,6 +8,7 @@ import Pagination from "@/components/Pagination/Pagination";
 import SearchBox from "@/components/SearchBox/SearchBox";
 import { useDebouncedCallback } from "use-debounce";
 import Link from "next/link";
+import { deleteNote, fetchNotes } from "@/lib/api/clientApi";
 
 type Props = {
   params: string | undefined;
@@ -21,7 +21,7 @@ function NotesClient({ params }: Props) {
   const [query, setQuery] = useState<string>("");
 
   const { data } = useQuery({
-    queryKey: ["notes", currentPage, query],
+    queryKey: ["notes", currentPage, query, params],
     queryFn: () => fetchNotes(query, currentPage, params),
     refetchOnMount: false,
   });
