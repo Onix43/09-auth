@@ -20,9 +20,9 @@ export default function SignUpPage() {
 
       const res = await register(formValues);
       if (res) {
+        setUser(res);
         router.push("/profile");
       } else {
-        setUser(res);
         setError("Invalid email or password");
       }
     } catch (error) {

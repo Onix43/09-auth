@@ -2,7 +2,7 @@ import { User } from "@/types/user";
 import type { Note, CreateNoteValues } from "../../types/note";
 import { nextServer } from "./api";
 
-interface FetchNotesResponse {
+export interface FetchNotesResponse {
   notes: Note[];
   totalPages: number;
 }
@@ -12,7 +12,7 @@ export interface RegisterRequest {
   password: string;
 }
 
-export interface LoginRequst {
+export interface LoginRequest {
   email: string;
   password: string;
 }
@@ -41,32 +41,25 @@ export async function fetchNotes(
 ): Promise<FetchNotesResponse> {
   const response = await nextServer.get<FetchNotesResponse>("/notes", {
     params: { search, page, tag, perPage: 12 },
-    method: "GET",
     ...noteOptions,
   });
   return response.data;
 }
 
 export async function fetchNoteById(id: string): Promise<Note> {
-  const response = await nextServer.get(`/notes/${id}`, {
+  const response = await nextServer.get<Note>(`/notes/${id}`, {
     ...noteOptions,
   });
   return response.data;
 }
 
-export async function createNote(
-  note: CreateNoteValues,
-): Promise<FetchNotesResponse> {
-  const response = await nextServer.post<FetchNotesResponse>(
-    "/notes",
-    note,
-    noteOptions,
-  );
+export async function createNote(note: CreateNoteValues): Promise<Note> {
+  const response = await nextServer.post<Note>("/notes", note, noteOptions);
   return response.data;
 }
 
-export async function deleteNote(noteId: string): Promise<FetchNotesResponse> {
-  const response = await nextServer.delete<FetchNotesResponse>(
+export async function deleteNote(noteId: string): Promise<Note> {
+  const response = await nextServer.delete<Note>(
     `/notes/${noteId}`,
     noteOptions,
   );
@@ -78,13 +71,13 @@ export async function register(data: RegisterRequest) {
   return res.data;
 }
 
-export async function login(data: LoginRequst) {
+export async function login(data: LoginRequest) {
   const res = await nextServer.post<User>("/auth/login", data);
   return res.data;
 }
 
 export async function logout() {
-  await nextServer.post("auth/logout");
+  await nextServer.post("/auth/logout");
 }
 
 export async function checkSession() {

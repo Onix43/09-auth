@@ -1,13 +1,13 @@
+"use client";
+
 import css from "./NoteForm.module.css";
 import type { CreateNoteValues, NoteTag } from "../../types/note";
 import { useRouter } from "next/navigation";
 import * as Yup from "yup";
 import { useState } from "react";
 import { useNoteDraftStore } from "@/lib/store/noteStore";
-
-type Props = {
-  onSubmit: (note: CreateNoteValues) => void;
-};
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createNote } from "@/lib/api/clientApi";
 
 const validationSchema = Yup.object().shape({
   title: Yup.string()
@@ -18,8 +18,9 @@ const validationSchema = Yup.object().shape({
   tag: Yup.string().required(),
 });
 
-export default function NoteForm({ onSubmit }: Props) {
+export default function NoteForm() {
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const queryClient = useQueryClient();
   const router = useRouter();
 
   const { draft, setDraft, clearDraft } = useNoteDraftStore();
@@ -35,6 +36,18 @@ export default function NoteForm({ onSubmit }: Props) {
     });
   };
 
+  const mutation = useMutation({
+    mutationFn: (newNote: CreateNoteValues) => createNote(newNote),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notes"] });
+      router.push("/notes/filter/all");
+      clearDraft();
+    },
+  });
+  const handleMutation = (note: CreateNoteValues) => {
+    mutation.mutate(note);
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -48,8 +61,7 @@ export default function NoteForm({ onSubmit }: Props) {
       await validationSchema.validate(value, { abortEarly: false });
 
       setErrors({});
-      onSubmit(value);
-      clearDraft();
+      handleMutation(value);
     } catch (err) {
       if (err instanceof Yup.ValidationError) {
         const validationErrors: Record<string, string> = {};
@@ -62,7 +74,7 @@ export default function NoteForm({ onSubmit }: Props) {
   };
 
   const handleCancel = () => {
-    router.push("/notes/filter/all");
+    router.back();
   };
 
   return (
@@ -74,7 +86,7 @@ export default function NoteForm({ onSubmit }: Props) {
           type="text"
           name="title"
           className={css.input}
-          defaultValue={draft?.title}
+          value={draft?.title}
           onChange={handleChange}
         />
         {errors.title && <span className={css.error}>{errors.title}</span>}
@@ -87,7 +99,7 @@ export default function NoteForm({ onSubmit }: Props) {
           name="content"
           rows={8}
           className={css.textarea}
-          defaultValue={draft?.content}
+          value={draft?.content}
           onChange={handleChange}
         />
         {errors.content && <span className={css.error}>{errors.content}</span>}
@@ -99,7 +111,7 @@ export default function NoteForm({ onSubmit }: Props) {
           id="tag"
           name="tag"
           className={css.select}
-          defaultValue={draft?.tag}
+          value={draft?.tag}
           onChange={handleChange}
         >
           <option value="Todo">Todo</option>

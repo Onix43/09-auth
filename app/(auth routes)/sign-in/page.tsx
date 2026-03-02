@@ -3,7 +3,7 @@
 import { useState } from "react";
 import css from "./SignInPage.module.css";
 import { useRouter } from "next/navigation";
-import { login, LoginRequst } from "@/lib/api/clientApi";
+import { login, LoginRequest } from "@/lib/api/clientApi";
 import { ApiError } from "@/lib/api/api";
 import { useAuthStore } from "@/lib/store/authStore";
 
@@ -14,7 +14,9 @@ export default function SignInPage() {
 
   const handleSubmit = async (formData: FormData) => {
     try {
-      const formValues = Object.fromEntries(formData) as unknown as LoginRequst;
+      const formValues = Object.fromEntries(
+        formData,
+      ) as unknown as LoginRequest;
       const res = await login(formValues);
       if (res) {
         setUser(res);
